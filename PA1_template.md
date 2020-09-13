@@ -10,7 +10,8 @@ output:
 [My Git repo](https://github.com/PhilippeVarmeLiz/RepData_PeerAssessment1), forked from [rdpeng](https://github.com/rdpeng/RepData_PeerAssessment1)
 
 ## Loading Required Libraries
-```{r message=FALSE, warning=FALSE}
+
+```r
 library(dplyr)
 library(ggplot2)
 library(scales)
@@ -21,7 +22,8 @@ library(gridExtra)
 ```
 
 ## Loading and preprocessing the data
-```{r}
+
+```r
 data_zip_name <- "activity.zip"
 data_folder <- "activity"
 
@@ -36,7 +38,8 @@ activity$date <- as.Date(activity$date)
 
 ## What is mean total number of steps taken per day?
 Grouping the data and getting the mean and median
-```{r message=FALSE, warning=FALSE}
+
+```r
 steps_per_day <- group_by(activity, date)
 steps_per_day <- summarise(steps_per_day, steps = sum(steps, na.rm = TRUE))
 
@@ -45,7 +48,8 @@ median_steps_per_day <- median(steps_per_day$steps, na.rm = TRUE)
 ```
 
 Plot
-```{r message=FALSE, warning=FALSE}
+
+```r
 g <- ggplot(data = steps_per_day, aes(x = steps)) +
   geom_histogram(bins = 30, color = "#666666", fill = "white", show.legend = FALSE, na.rm = FALSE) +
   ggtitle("Total number of steps taken each day (with NAs)")
@@ -67,43 +71,65 @@ g <- g +
 print(g)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
 ## What is the average daily activity pattern?
 Grouping by interval
-```{r message=FALSE, warning=FALSE}
+
+```r
 by_interval <- group_by(activity, interval)
 by_interval <- summarise(by_interval, average_steps = mean(steps, na.rm = TRUE))
 ```
 
-Plot
-```{r}
-ggplot(data = by_interval, aes(x = interval, y = average_steps, na.rm = TRUE)) +
-  geom_line()
-
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
 ```
 
+Plot
+
+```r
+ggplot(data = by_interval, aes(x = interval, y = average_steps, na.rm = TRUE)) +
+  geom_line()
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
 Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-```{r}
+
+```r
 by_interval[which.max(by_interval$average_steps), ]$interval
+```
+
+```
+## [1] 835
 ```
 
 ## Imputing missing values
 Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
-```{r}
+
+```r
 sum(is.na(activity$steps))
 ```
 
+```
+## [1] 2304
+```
+
 Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
-```{r}
+
+```r
 imputed_steps <- by_interval$average_steps[match(activity$interval, by_interval$interval)]
 ```
 
 Create a new dataset that is equal to the original dataset but with the missing data filled in.
-```{r}
+
+```r
 activity_imputed <- transform(activity, steps = ifelse(is.na(activity$steps), yes = imputed_steps, no = activity$steps))
 ```
 
 Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day.
-```{r message=FALSE, warning=FALSE}
+
+```r
 steps_per_day_imputed <- group_by(activity_imputed, date)
 steps_per_day_imputed <- summarise(steps_per_day_imputed, steps = sum(steps, na.rm = TRUE))
 
@@ -131,15 +157,21 @@ g_imputed <- g_imputed +
 print(g_imputed)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
 Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-```{r}
+
+```r
 grid.arrange(g, g_imputed)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r message=FALSE, warning=FALSE}
+
+```r
 activity_week_wise <- transform(activity, day_type = ifelse(wday(activity$date, week_start = 1) %in% c(6,7), yes = "weekend", no = "weekday"))
 
 activity_week_wise_group <- group_by(activity_week_wise, interval, day_type)
@@ -159,3 +191,5 @@ g <- ggplot(data = activity_week_wise_group,
   
 print(g)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
